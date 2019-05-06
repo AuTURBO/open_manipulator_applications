@@ -89,7 +89,7 @@ $ roslaunch turtlebot3_slam_3d turtlebot3_slam_3d.launch use_zed:=false
 $ roslaunch open_manipulator_controller open_manipulator_controller.launch use_platform:=true
 $ roslaunch open_manipulator_apple open_manipulator_apple2.launch target_object:=apple use_platform:=true
 ```
-[![Video Label](http://img.youtube.com/vi/YdoxhwN8x/0.jpg)](https://youtu.be/YdoxhwN8x?t=0s)   
+[![Video Label](http://img.youtube.com/vi/YdoxhwN8x-E/0.jpg)](https://youtu.be/YdoxhwN8x-E?t=0s)   
 
 * Run Coffee(TalTal)   
 ```bash
