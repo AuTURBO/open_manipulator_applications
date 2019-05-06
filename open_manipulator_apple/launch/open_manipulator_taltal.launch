@@ -1,14 +1,13 @@
 <launch>
   <arg name="robot_name"   default="open_manipulator"/>
-  <arg name="target_object"       default="apple"/>
   <arg name="use_platform"           default= "true" />
 
   <!-- jsk and yolo -->
-  <include file="$(find turtlebot3_slam_3d)/launch/demo_bag2.launch"/>
+  <!--<include file="$(find turtlebot3_slam_3d)/launch/demo_bag2.launch"/>-->
 
   <!-- manipulator control -->
   <group ns="$(arg robot_name)">
-    <node name="open_manipulator_apple" pkg="open_manipulator_apple" type="open_manipulator_apple" output="screen">
+    <node name="open_manipulator_taltal" pkg="open_manipulator_apple" type="open_manipulator_taltal" output="screen">
 	<param name="target_object"     value="$(arg target_object)"/>
         <param name="using_platform"       value="$(arg use_platform)"/>
     </node>

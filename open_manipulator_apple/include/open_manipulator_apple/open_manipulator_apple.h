@@ -60,6 +60,7 @@ class OpenManipulatorApple
   std::vector<YoloObject> yolo_pose;
   std::vector<YoloObject> avg_pose;
   std::string target_object;
+  bool use_platform;
 
   uint8_t mode_state_;
   uint8_t demo_count_;

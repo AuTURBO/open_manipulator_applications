@@ -16,12 +16,12 @@
 
 /* Authors: Darby Lim, Hye-Jong KIM, Ryan Shim, Yong-Ho Na */
 
-#include "open_manipulator_apple/open_manipulator_apple.h"
+#include "open_manipulator_taltal/open_manipulator_taltal.h"
 
 int test_count = 0;
 std::vector<int> t_data;
 
-OpenManipulatorApple::OpenManipulatorApple()
+OpenManipulatorTaltal::OpenManipulatorTaltal()
     :node_handle_(""),
      priv_node_handle_("~"),
      mode_state_(0),
@@ -36,7 +36,7 @@ OpenManipulatorApple::OpenManipulatorApple()
   joint_name_.push_back("joint3");
   joint_name_.push_back("joint4");
 
-  target_object = priv_node_handle_.param<std::string>("target_object", "apple");
+  target_object = priv_node_handle_.param<std::string>("target_object", "taltal");
   use_platform         = priv_node_handle_.param<bool>("using_platform", true);
 
   initServiceClient();
@@ -56,7 +56,7 @@ OpenManipulatorApple::OpenManipulatorApple()
   on_btn_home_pose_clicked();
 }
 
-OpenManipulatorApple::~OpenManipulatorApple()
+OpenManipulatorTaltal::~OpenManipulatorTaltal()
 {
   if(ros::isStarted()) {
     ros::shutdown();
@@ -64,7 +64,7 @@ OpenManipulatorApple::~OpenManipulatorApple()
   }
 }
 
-void OpenManipulatorApple::initServiceClient()
+void OpenManipulatorTaltal::initServiceClient()
 {
   goal_joint_space_path_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_joint_space_path");
   goal_tool_control_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_tool_control");
@@ -72,21 +72,21 @@ void OpenManipulatorApple::initServiceClient()
   goal_task_space_path_position_only_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetKinematicsPose>("goal_task_space_path_position_only");
 }
 
-void OpenManipulatorApple::initSubscribe()
+void OpenManipulatorTaltal::initSubscribe()
 {
-  open_manipulator_states_sub_       = node_handle_.subscribe("states", 10, &OpenManipulatorApple::manipulatorStatesCallback, this);
-  open_manipulator_joint_states_sub_ = node_handle_.subscribe("joint_states", 10, &OpenManipulatorApple::jointStatesCallback, this);
-  open_manipulator_kinematics_pose_sub_ = node_handle_.subscribe("gripper/kinematics_pose", 10, &OpenManipulatorApple::kinematicsPoseCallback, this);
-  ar_pose_marker_sub_   = node_handle_.subscribe("/ar_pose_marker", 10, &OpenManipulatorApple::arPoseMarkerCallback, this);
-  centroid_pose_array_sub = node_handle_.subscribe("/cluster_decomposer/centroid_pose_array", 10, &OpenManipulatorApple::centroidPoseArrayMsgCallback,this);
+  open_manipulator_states_sub_       = node_handle_.subscribe("states", 10, &OpenManipulatorTaltal::manipulatorStatesCallback, this);
+  open_manipulator_joint_states_sub_ = node_handle_.subscribe("joint_states", 10, &OpenManipulatorTaltal::jointStatesCallback, this);
+  open_manipulator_kinematics_pose_sub_ = node_handle_.subscribe("gripper/kinematics_pose", 10, &OpenManipulatorTaltal::kinematicsPoseCallback, this);
+  ar_pose_marker_sub_   = node_handle_.subscribe("/ar_pose_marker", 10, &OpenManipulatorTaltal::arPoseMarkerCallback, this);
+  centroid_pose_array_sub = node_handle_.subscribe("/cluster_decomposer/centroid_pose_array", 10, &OpenManipulatorTaltal::centroidPoseArrayMsgCallback,this);
 }
 
-void OpenManipulatorApple::initPublish()
+void OpenManipulatorTaltal::initPublish()
 {
   target_object_pub_  = node_handle_.advertise<std_msgs::String>("/targetObjectSubscriber", 10);
 }
 
-void OpenManipulatorApple::on_btn_home_pose_clicked(void)
+void OpenManipulatorTaltal::on_btn_home_pose_clicked(void)
 {
   std::vector<std::string> joint_name;
   std::vector<double> joint_angle;
@@ -96,6 +96,7 @@ void OpenManipulatorApple::on_btn_home_pose_clicked(void)
   joint_name.push_back("joint2"); joint_angle.push_back(-1.05);
   joint_name.push_back("joint3"); joint_angle.push_back(0.35);
   joint_name.push_back("joint4"); joint_angle.push_back(0.70);
+
   if(!setJointSpacePath(joint_name, joint_angle, path_time))
   {
     ROS_INFO("[ERR!!] Failed to send service");
@@ -104,7 +105,7 @@ void OpenManipulatorApple::on_btn_home_pose_clicked(void)
   ROS_INFO("Send joint angle to home pose");
 }
 
-bool OpenManipulatorApple::setJointSpacePath(std::vector<std::string> joint_name, std::vector<double> joint_angle, double path_time)
+bool OpenManipulatorTaltal::setJointSpacePath(std::vector<std::string> joint_name, std::vector<double> joint_angle, double path_time)
 {
   open_manipulator_msgs::SetJointPosition srv;
   srv.request.joint_position.joint_name = joint_name;
@@ -118,7 +119,7 @@ bool OpenManipulatorApple::setJointSpacePath(std::vector<std::string> joint_name
   return false;
 }
 
-bool OpenManipulatorApple::setToolControl(std::vector<double> joint_angle)
+bool OpenManipulatorTaltal::setToolControl(std::vector<double> joint_angle)
 {
   open_manipulator_msgs::SetJointPosition srv;
   srv.request.joint_position.joint_name.push_back("gripper");
@@ -131,7 +132,7 @@ bool OpenManipulatorApple::setToolControl(std::vector<double> joint_angle)
   return false;
 }
 
-bool OpenManipulatorApple::setTaskSpacePath(std::vector<double> kinematics_pose,std::vector<double> kienmatics_orientation, double path_time)
+bool OpenManipulatorTaltal::setTaskSpacePath(std::vector<double> kinematics_pose,std::vector<double> kienmatics_orientation, double path_time)
 {
   open_manipulator_msgs::SetKinematicsPose srv;
 
@@ -156,7 +157,7 @@ bool OpenManipulatorApple::setTaskSpacePath(std::vector<double> kinematics_pose,
   return false;
 }
 
-void OpenManipulatorApple::manipulatorStatesCallback(const open_manipulator_msgs::OpenManipulatorState::ConstPtr &msg)
+void OpenManipulatorTaltal::manipulatorStatesCallback(const open_manipulator_msgs::OpenManipulatorState::ConstPtr &msg)
 {
   if(msg->open_manipulator_moving_state == msg->IS_MOVING)
     open_manipulator_is_moving_ = true;
@@ -164,7 +165,7 @@ void OpenManipulatorApple::manipulatorStatesCallback(const open_manipulator_msgs
     open_manipulator_is_moving_ = false;
 }
 
-void OpenManipulatorApple::jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
+void OpenManipulatorTaltal::jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
 {
   std::vector<double> temp_angle;
   temp_angle.resize(NUM_OF_JOINT_AND_TOOL);
@@ -179,7 +180,7 @@ void OpenManipulatorApple::jointStatesCallback(const sensor_msgs::JointState::Co
   present_joint_angle_ = temp_angle;
 }
 
-void OpenManipulatorApple::kinematicsPoseCallback(const open_manipulator_msgs::KinematicsPose::ConstPtr &msg)
+void OpenManipulatorTaltal::kinematicsPoseCallback(const open_manipulator_msgs::KinematicsPose::ConstPtr &msg)
 {
   std::vector<double> temp_position;
   temp_position.push_back(msg->pose.position.x);
@@ -189,7 +190,7 @@ void OpenManipulatorApple::kinematicsPoseCallback(const open_manipulator_msgs::K
   present_kinematic_position_ = temp_position;
 }
 
-void OpenManipulatorApple::arPoseMarkerCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr &msg)
+void OpenManipulatorTaltal::arPoseMarkerCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr &msg)
 {
   std::vector<ArMarker> temp_buffer;
   for(int i = 0; i < msg->markers.size(); i ++)
@@ -206,7 +207,7 @@ void OpenManipulatorApple::arPoseMarkerCallback(const ar_track_alvar_msgs::Alvar
   ar_marker_pose = temp_buffer;
 }
 
-void OpenManipulatorApple::centroidPoseArrayMsgCallback(const geometry_msgs::PoseArray::ConstPtr &msg)
+void OpenManipulatorTaltal::centroidPoseArrayMsgCallback(const geometry_msgs::PoseArray::ConstPtr &msg)
 {  
   std::vector<YoloObject> temp_buffer;
 
@@ -277,7 +278,7 @@ void OpenManipulatorApple::centroidPoseArrayMsgCallback(const geometry_msgs::Pos
   //ROS_INFO("SAVE POSE OF centroidPoseArray ");
 }
 
-void OpenManipulatorApple::test(void)
+void OpenManipulatorTaltal::test(void)
 { 
   
   test_count++;
@@ -291,7 +292,7 @@ void OpenManipulatorApple::test(void)
 }
 
 
-void OpenManipulatorApple::publishCallback(const ros::TimerEvent&)
+void OpenManipulatorTaltal::publishCallback(const ros::TimerEvent&)
 {
   //printText();
   //test();
@@ -309,7 +310,8 @@ void OpenManipulatorApple::publishCallback(const ros::TimerEvent&)
     setJointSpacePath(joint_name_, joint_angle, 2.0);
 
     std::vector<double> gripper_value;
-    gripper_value.push_back(0.0);
+    //gripper_value.push_back(0.0);
+    gripper_value.push_back(0.003);
     setToolControl(gripper_value);
     mode_state_ = 0;
   }
@@ -320,28 +322,37 @@ void OpenManipulatorApple::publishCallback(const ros::TimerEvent&)
   else if(mode_state_ == DEMO_STOP)
   {
 
+    std::vector<double> joint_angle;
+
+    joint_angle.push_back( 0.00);
+    joint_angle.push_back(-1.05);
+    joint_angle.push_back( 0.35);
+    joint_angle.push_back( 0.70);
+    setJointSpacePath(joint_name_, joint_angle, 2.0);
+
+    std::vector<double> gripper_value;
+    //gripper_value.push_back(0.0);
+    gripper_value.push_back(0.01);
+    setToolControl(gripper_value);
+    mode_state_ = 0;
+
   }
 }
-void OpenManipulatorApple::setModeState(char ch)
+void OpenManipulatorTaltal::setModeState(char ch)
 {
   ROS_INFO("setModeState %c ", ch);
   if(ch == '1')
     mode_state_ = HOME_POSE;
   else if(ch == '2')
   {
-    if( avg_pose.size() >= avg_size )
-    {
        mode_state_ = DEMO_START;
        demo_count_ = 0;
-    }else{
-       ROS_INFO("wait average");      
-    }
   }
   else if(ch == '3')
     mode_state_ = DEMO_STOP;
 }
 
-void OpenManipulatorApple::demoSequence()
+void OpenManipulatorTaltal::demoSequence()
 {
   std::vector<double> joint_angle;
   std::vector<double> kinematics_position;
@@ -351,25 +362,84 @@ void OpenManipulatorApple::demoSequence()
   switch(demo_count_)
   {
   case 0: // home pose
-    joint_angle.push_back( 0.00);
-    joint_angle.push_back(-1.05);
-    joint_angle.push_back( 0.35);
-    joint_angle.push_back( 0.70);
-    setJointSpacePath(joint_name_, joint_angle, 1.5);
-    demo_count_ ++;
+    printf(".........demo start........................\n");
+    /*joint_angle.push_back( 0.629);
+    joint_angle.push_back( -0.064);
+    joint_angle.push_back(  0.304);
+    joint_angle.push_back( -0.009);
+    setJointSpacePath(joint_name_, joint_angle, 3);
+    ros::Duration(3).sleep(); */
+
+    joint_angle.clear();
+    joint_angle.push_back( 0.493);
+    joint_angle.push_back( -0.141);
+    joint_angle.push_back( -0.117);
+    joint_angle.push_back(  1.0065);
+    setJointSpacePath(joint_name_, joint_angle, 3);
+    ros::Duration(3).sleep(); 
+
+    joint_angle.clear();
+    joint_angle.push_back( 0.382);
+    joint_angle.push_back( 0.459);
+    joint_angle.push_back( -0.818);
+    joint_angle.push_back(  2.0);
+    setJointSpacePath(joint_name_, joint_angle, 3);
+    ros::Duration(3).sleep(); 
+
+    for( int i = 0 ; i < 3 ; i++){
+    joint_angle.clear();
+    joint_angle.push_back( 0.382);
+    joint_angle.push_back( 0.205);
+    joint_angle.push_back( -0.656);
+    joint_angle.push_back(  2.0);
+    setJointSpacePath(joint_name_, joint_angle, 0.1);
+    ros::Duration(0.1).sleep(); 
+
+    joint_angle.clear();
+    joint_angle.push_back( 0.382);
+    joint_angle.push_back( 0.459);
+    joint_angle.push_back( -0.818);
+    joint_angle.push_back(  2.0);
+    setJointSpacePath(joint_name_, joint_angle, 0.1);
+    ros::Duration(0.1).sleep(); 
+    }
+
+
+    demo_count_ = 0;
+    mode_state_ = 8;
+
+    //demo_count_ ++;
+
+      /*  kinematics_position.clear();
+        kinematics_orientation.push_back(0.74);
+        kinematics_orientation.push_back(0.00);
+        kinematics_orientation.push_back(0.66);
+        kinematics_orientation.push_back(0.00);
+        setTaskSpacePath(kinematics_position, kinematics_orientation, 2.0);
+        ros::Duration(2).sleep(); 
+
+        kinematics_position.clear();
+        kinematics_orientation.push_back(0.74);
+        kinematics_orientation.push_back(0.00);
+        kinematics_orientation.push_back(0.66);
+        kinematics_orientation.push_back(0.00);
+        setTaskSpacePath(kinematics_position, kinematics_orientation, 2.0);
+        ros::Duration(2).sleep(); */
+
     break;
   case 1: // initial pose
-    joint_angle.push_back( 0.01);
+    /*joint_angle.push_back( 0.01);
     joint_angle.push_back(-0.80);
     joint_angle.push_back( 0.00);
-    joint_angle.push_back( 1.50);
+    joint_angle.push_back( 1.50);*/
     //setJointSpacePath(joint_name_, joint_angle, 1.0);
     demo_count_ ++;
     break;
   case 2: // wait & open the gripper
     setJointSpacePath(joint_name_, present_joint_angle_, 3.0);
-    gripper_value.push_back(0.010);
-    setToolControl(gripper_value);
+    //gripper_value.push_back(0.010);
+    //gripper_value.push_back(0.008);
+    //setToolControl(gripper_value);
     demo_count_ ++;
     break;
   case 3: // pick the box
@@ -494,7 +564,7 @@ void OpenManipulatorApple::demoSequence()
 }
 
 
-void OpenManipulatorApple::printText()
+void OpenManipulatorTaltal::printText()
 {
   /*system("clear");
 
@@ -564,7 +634,7 @@ void OpenManipulatorApple::printText()
   }
 }
 
-bool OpenManipulatorApple::kbhit()
+bool OpenManipulatorTaltal::kbhit()
 {
   termios term;
   tcgetattr(0, &term);
@@ -579,7 +649,7 @@ bool OpenManipulatorApple::kbhit()
   return byteswaiting > 0;
 }
 
-void OpenManipulatorApple::objectPublisher(void)
+void OpenManipulatorTaltal::objectPublisher(void)
 {
   std_msgs::String msg;
   msg.data = target_object.c_str();
@@ -590,12 +660,12 @@ void OpenManipulatorApple::objectPublisher(void)
 int main(int argc, char **argv)
 {
   // Init ROS node
-  ros::init(argc, argv, "open_manipulator_apple");
+  ros::init(argc, argv, "open_manipulator_taltal");
   ros::NodeHandle node_handle("");
 
-  OpenManipulatorApple open_manipulator_apple;
+  OpenManipulatorTaltal open_manipulator_taltal;
 
-  ros::Timer publish_timer = node_handle.createTimer(ros::Duration(0.100)/*100ms*/, &OpenManipulatorApple::publishCallback, &open_manipulator_apple);
+  ros::Timer publish_timer = node_handle.createTimer(ros::Duration(0.100)/*100ms*/, &OpenManipulatorTaltal::publishCallback, &open_manipulator_taltal);
 
   while (ros::ok())
   {
