@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
     open_manipulator_msgs
+    tf
 )
 
 ################################################################################
@@ -47,6 +48,10 @@ include_directories(
 add_executable(open_manipulator_apple src/open_manipulator_apple.cpp)
 add_dependencies(open_manipulator_apple ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(open_manipulator_apple ${catkin_LIBRARIES})
+
+add_executable(open_manipulator_person1 src/open_manipulator_person.cpp)
+add_dependencies(open_manipulator_person1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(open_manipulator_person1 ${catkin_LIBRARIES})
 
 add_executable(open_manipulator_taltal src/open_manipulator_taltal.cpp)
 add_dependencies(open_manipulator_taltal ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

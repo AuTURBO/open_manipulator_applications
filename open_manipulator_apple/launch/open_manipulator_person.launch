@@ -1,0 +1,13 @@
+<launch>
+  <arg name="robot_name"   default="open_manipulator"/>
+  <arg name="target_object"       default="person"/>
+  <arg name="use_platform"           default= "true" />
+
+  <!-- manipulator control -->
+  <group ns="$(arg robot_name)">
+    <node name="open_manipulator_person1" pkg="open_manipulator_apple" type="open_manipulator_person1" output="screen">
+	<param name="target_object"     value="$(arg target_object)"/>
+        <param name="using_platform"       value="$(arg use_platform)"/>
+    </node>
+  </group>
+</launch>

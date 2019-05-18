@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * Copyright 2018 ROBOTIS CO., LTD.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,11 @@
 
 /* Authors: Darby Lim, Hye-Jong KIM, Ryan Shim, Yong-Ho Na */
 
-#include "open_manipulator_pick_and_place/open_manipulator_pick_and_place.h"
+#include "open_manipulator_person/open_manipulator_person.h"
+  
+tf::StampedTransform transform;
 
-OpenManipulatorPickandPlace::OpenManipulatorPickandPlace()
+OpenManipulatorPerson::OpenManipulatorPerson()
     :node_handle_(""),
      priv_node_handle_("~"),
      mode_state_(0),
@@ -37,7 +39,7 @@ OpenManipulatorPickandPlace::OpenManipulatorPickandPlace()
   initSubscribe();
 }
 
-OpenManipulatorPickandPlace::~OpenManipulatorPickandPlace()
+OpenManipulatorPerson::~OpenManipulatorPerson()
 {
   if(ros::isStarted()) {
     ros::shutdown();
@@ -45,22 +47,22 @@ OpenManipulatorPickandPlace::~OpenManipulatorPickandPlace()
   }
 }
 
-void OpenManipulatorPickandPlace::initServiceClient()
+void OpenManipulatorPerson::initServiceClient()
 {
   goal_joint_space_path_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_joint_space_path");
   goal_tool_control_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_tool_control");
   goal_task_space_path_client_ = node_handle_.serviceClient<open_manipulator_msgs::SetKinematicsPose>("goal_task_space_path");
 }
 
-void OpenManipulatorPickandPlace::initSubscribe()
+void OpenManipulatorPerson::initSubscribe()
 {
-  open_manipulator_states_sub_       = node_handle_.subscribe("states", 10, &OpenManipulatorPickandPlace::manipulatorStatesCallback, this);
-  open_manipulator_joint_states_sub_ = node_handle_.subscribe("joint_states", 10, &OpenManipulatorPickandPlace::jointStatesCallback, this);
-  open_manipulator_kinematics_pose_sub_ = node_handle_.subscribe("gripper/kinematics_pose", 10, &OpenManipulatorPickandPlace::kinematicsPoseCallback, this);
-  ar_pose_marker_sub_   = node_handle_.subscribe("/ar_pose_marker", 10, &OpenManipulatorPickandPlace::arPoseMarkerCallback, this);
+  open_manipulator_states_sub_       = node_handle_.subscribe("states", 10, &OpenManipulatorPerson::manipulatorStatesCallback, this);
+  open_manipulator_joint_states_sub_ = node_handle_.subscribe("joint_states", 10, &OpenManipulatorPerson::jointStatesCallback, this);
+  open_manipulator_kinematics_pose_sub_ = node_handle_.subscribe("gripper/kinematics_pose", 10, &OpenManipulatorPerson::kinematicsPoseCallback, this);
+  ar_pose_marker_sub_   = node_handle_.subscribe("/ar_pose_marker", 10, &OpenManipulatorPerson::arPoseMarkerCallback, this);
 }
 
-bool OpenManipulatorPickandPlace::setJointSpacePath(std::vector<std::string> joint_name, std::vector<double> joint_angle, double path_time)
+bool OpenManipulatorPerson::setJointSpacePath(std::vector<std::string> joint_name, std::vector<double> joint_angle, double path_time)
 {
   open_manipulator_msgs::SetJointPosition srv;
   srv.request.joint_position.joint_name = joint_name;
@@ -74,7 +76,7 @@ bool OpenManipulatorPickandPlace::setJointSpacePath(std::vector<std::string> joi
   return false;
 }
 
-bool OpenManipulatorPickandPlace::setToolControl(std::vector<double> joint_angle)
+bool OpenManipulatorPerson::setToolControl(std::vector<double> joint_angle)
 {
   open_manipulator_msgs::SetJointPosition srv;
   srv.request.joint_position.joint_name.push_back("gripper");
@@ -87,7 +89,7 @@ bool OpenManipulatorPickandPlace::setToolControl(std::vector<double> joint_angle
   return false;
 }
 
-bool OpenManipulatorPickandPlace::setTaskSpacePath(std::vector<double> kinematics_pose,std::vector<double> kienmatics_orientation, double path_time)
+bool OpenManipulatorPerson::setTaskSpacePath(std::vector<double> kinematics_pose,std::vector<double> kienmatics_orientation, double path_time)
 {
   open_manipulator_msgs::SetKinematicsPose srv;
 
@@ -111,7 +113,7 @@ bool OpenManipulatorPickandPlace::setTaskSpacePath(std::vector<double> kinematic
   return false;
 }
 
-void OpenManipulatorPickandPlace::manipulatorStatesCallback(const open_manipulator_msgs::OpenManipulatorState::ConstPtr &msg)
+void OpenManipulatorPerson::manipulatorStatesCallback(const open_manipulator_msgs::OpenManipulatorState::ConstPtr &msg)
 {
   if(msg->open_manipulator_moving_state == msg->IS_MOVING)
     open_manipulator_is_moving_ = true;
@@ -119,7 +121,7 @@ void OpenManipulatorPickandPlace::manipulatorStatesCallback(const open_manipulat
     open_manipulator_is_moving_ = false;
 }
 
-void OpenManipulatorPickandPlace::jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
+void OpenManipulatorPerson::jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
 {
   std::vector<double> temp_angle;
   temp_angle.resize(NUM_OF_JOINT_AND_TOOL);
@@ -134,7 +136,7 @@ void OpenManipulatorPickandPlace::jointStatesCallback(const sensor_msgs::JointSt
   present_joint_angle_ = temp_angle;
 }
 
-void OpenManipulatorPickandPlace::kinematicsPoseCallback(const open_manipulator_msgs::KinematicsPose::ConstPtr &msg)
+void OpenManipulatorPerson::kinematicsPoseCallback(const open_manipulator_msgs::KinematicsPose::ConstPtr &msg)
 {
   std::vector<double> temp_position;
   temp_position.push_back(msg->pose.position.x);
@@ -144,9 +146,10 @@ void OpenManipulatorPickandPlace::kinematicsPoseCallback(const open_manipulator_
   present_kinematic_position_ = temp_position;
 }
 
-void OpenManipulatorPickandPlace::arPoseMarkerCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr &msg)
+void OpenManipulatorPerson::arPoseMarkerCallback(const ar_track_alvar_msgs::AlvarMarkers::ConstPtr &msg)
 {
   std::vector<ArMarker> temp_buffer;
+  return;
   for(int i = 0; i < msg->markers.size(); i ++)
   {
     ArMarker temp;
@@ -157,24 +160,33 @@ void OpenManipulatorPickandPlace::arPoseMarkerCallback(const ar_track_alvar_msgs
 
     temp_buffer.push_back(temp);
   }
-
-  ar_marker_pose = temp_buffer;
+  
+  if( msg->markers.size() != 0 ){ 
+  	ar_marker_pose = temp_buffer;
+  }
 }
 
-void OpenManipulatorPickandPlace::publishCallback(const ros::TimerEvent&)
+void OpenManipulatorPerson::publishCallback(const ros::TimerEvent&)
 {
-  printText();
+  std::vector<double> joint_angle;
+  //printText();
   if(kbhit()) setModeState(std::getchar());
 
   if(mode_state_ == HOME_POSE)
   {
     std::vector<double> joint_angle;
 
-    joint_angle.push_back( 0.00);
+ /*   joint_angle.push_back( 0.00);
     joint_angle.push_back(-1.05);
     joint_angle.push_back( 0.35);
     joint_angle.push_back( 0.70);
-    setJointSpacePath(joint_name_, joint_angle, 2.0);
+    setJointSpacePath(joint_name_, joint_angle, 2.0);*/
+
+    joint_angle.push_back( 0.00);
+    joint_angle.push_back(-0.727);
+    joint_angle.push_back( -0.313);
+    joint_angle.push_back( 1.996);
+    setJointSpacePath(joint_name_, joint_angle, 1.5);
 
     std::vector<double> gripper_value;
     gripper_value.push_back(0.0);
@@ -188,9 +200,15 @@ void OpenManipulatorPickandPlace::publishCallback(const ros::TimerEvent&)
   else if(mode_state_ == DEMO_STOP)
   {
 
+    joint_angle.push_back( 0.00);
+    joint_angle.push_back(-0.727);
+    joint_angle.push_back( -0.313);
+    joint_angle.push_back( 1.996);
+    setJointSpacePath(joint_name_, joint_angle, 1.5);
+
   }
 }
-void OpenManipulatorPickandPlace::setModeState(char ch)
+void OpenManipulatorPerson::setModeState(char ch)
 {
   if(ch == '1')
     mode_state_ = HOME_POSE;
@@ -203,7 +221,7 @@ void OpenManipulatorPickandPlace::setModeState(char ch)
     mode_state_ = DEMO_STOP;
 }
 
-void OpenManipulatorPickandPlace::demoSequence()
+void OpenManipulatorPerson::demoSequence()
 {
   std::vector<double> joint_angle;
   std::vector<double> kinematics_position;
@@ -213,19 +231,25 @@ void OpenManipulatorPickandPlace::demoSequence()
   switch(demo_count_)
   {
   case 0: // home pose
-    joint_angle.push_back( 0.00);
+    /*joint_angle.push_back( 0.00);
     joint_angle.push_back(-1.05);
     joint_angle.push_back( 0.35);
-    joint_angle.push_back( 0.70);
-    setJointSpacePath(joint_name_, joint_angle, 1.5);
-    demo_count_ ++;
-    break;
-  case 1: // initial pose
-    joint_angle.push_back( 0.01);
+    joint_angle.push_back( 0.70);*/
+    /*joint_angle.push_back( 0.01);
     joint_angle.push_back(-0.80);
     joint_angle.push_back( 0.00);
     joint_angle.push_back( 1.90);
-    setJointSpacePath(joint_name_, joint_angle, 1.0);
+    setJointSpacePath(joint_name_, joint_angle, 1.5);*/
+    //demo_count_ ++;
+ 
+    demo_count_ = 2 ;
+    break;
+  case 1: // initial pose
+    /*joint_angle.push_back( 0.01);
+    joint_angle.push_back(-0.80);
+    joint_angle.push_back( 0.00);
+    joint_angle.push_back( 1.90);
+    setJointSpacePath(joint_name_, joint_angle, 1.0);*/
     demo_count_ ++;
     break;
   case 2: // wait & open the gripper
@@ -235,27 +259,33 @@ void OpenManipulatorPickandPlace::demoSequence()
     demo_count_ ++;
     break;
   case 3: // pick the box
-    for(int i = 0; i < ar_marker_pose.size(); i ++)
-    {
-      if(ar_marker_pose.at(i).id == pick_ar_id_)
-      {
-        kinematics_position.push_back(ar_marker_pose.at(i).position[0]);
-        kinematics_position.push_back(ar_marker_pose.at(i).position[1]);
+    printf(".................%d \n", ar_marker_pose.size() );
+    //for(int i = 0; i < ar_marker_pose.size(); i ++)
+    //{
+      //if(ar_marker_pose.at(i).id == 0)
+      //{       
+
+        kinematics_position.push_back(transform.getOrigin().x());
+        kinematics_position.push_back(transform.getOrigin().y());
+        //kinematics_position.push_back(0.05);
         kinematics_position.push_back(0.05);
         kinematics_orientation.push_back(0.74);
         kinematics_orientation.push_back(0.00);
         kinematics_orientation.push_back(0.66);
         kinematics_orientation.push_back(0.00);
         setTaskSpacePath(kinematics_position, kinematics_orientation, 2.0);
+        //ros::Duration(3).sleep(); 
+
         demo_count_ ++;
-        return;
-      }
-    }
-    demo_count_ = 2;  // If the detection fails.
+        //return;
+      //}
+    //}
+    //demo_count_ = 2;  // If the detection fails.
+    //printf("detection fail \n");
     break;
   case 4: // wait & grip
     setJointSpacePath(joint_name_, present_joint_angle_, 1.0);
-    gripper_value.push_back(-0.002);
+    gripper_value.push_back(-0.010);
     setToolControl(gripper_value);
     demo_count_ ++;
     break;
@@ -307,11 +337,12 @@ void OpenManipulatorPickandPlace::demoSequence()
     break;
   case 10: // home pose
     joint_angle.push_back( 0.00);
-    joint_angle.push_back(-1.05);
-    joint_angle.push_back( 0.35);
-    joint_angle.push_back( 0.70);
+    joint_angle.push_back(-0.727);
+    joint_angle.push_back( -0.313);
+    joint_angle.push_back( 1.996);
     setJointSpacePath(joint_name_, joint_angle, 1.5);
     demo_count_ = 1;
+    mode_state_ = DEMO_STOP;
     if(pick_ar_id_ == 0) pick_ar_id_ = 1;
     else if(pick_ar_id_ == 1) pick_ar_id_ = 2;
     else if(pick_ar_id_ == 2)
@@ -325,7 +356,7 @@ void OpenManipulatorPickandPlace::demoSequence()
 }
 
 
-void OpenManipulatorPickandPlace::printText()
+void OpenManipulatorPerson::printText()
 {
   system("clear");
 
@@ -395,7 +426,7 @@ void OpenManipulatorPickandPlace::printText()
   }
 }
 
-bool OpenManipulatorPickandPlace::kbhit()
+bool OpenManipulatorPerson::kbhit()
 {
   termios term;
   tcgetattr(0, &term);
@@ -413,15 +444,28 @@ bool OpenManipulatorPickandPlace::kbhit()
 int main(int argc, char **argv)
 {
   // Init ROS node
-  ros::init(argc, argv, "open_manipulator_pick_and_place");
+  ros::init(argc, argv, "open_manipulator_person");
   ros::NodeHandle node_handle("");
 
-  OpenManipulatorPickandPlace open_manipulator_pick_and_place;
+  tf::TransformListener listener(ros::Duration(10));  
 
-  ros::Timer publish_timer = node_handle.createTimer(ros::Duration(0.100)/*100ms*/, &OpenManipulatorPickandPlace::publishCallback, &open_manipulator_pick_and_place);
+  OpenManipulatorPerson open_manipulator_person;
+
+  ros::Timer publish_timer = node_handle.createTimer(ros::Duration(0.100)/*100ms*/, &OpenManipulatorPerson::publishCallback, &open_manipulator_person);
 
   while (ros::ok())
   {
+    try{
+    //listener.transformPoint("yolo_output00", laser_point, base_point);
+    if(open_manipulator_person.mode_state_ != DEMO_START ){
+        listener.lookupTransform("world", "yolo_output00", ros::Time(0), transform);
+    }
+    //ROS_INFO("tf position %.3f , %.3f, %.3f" , transform.getOrigin().x(), transform.getOrigin().y() , transform.getOrigin().z());
+    }
+    catch (tf::TransformException ex){
+      ROS_ERROR("%s",ex.what());
+      ros::Duration(1.0).sleep();
+    }
     ros::spinOnce();
   }
   return 0;

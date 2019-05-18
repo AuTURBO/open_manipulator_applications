@@ -13,7 +13,7 @@ This git is Ros application Git.
 
 ## Environment setting     
 
-* Step0, Set D435 environment.   
+* Step1, Set D435 environment.   
 http://emanual.robotis.com/docs/en/platform/openmanipulator_x/ros_applications/#ros-applications
 ```bash
   $ sudo apt-key adv --keyserver keys.gnupg.net --recv-key C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C8B3A55A6F3EFCDE
@@ -23,8 +23,17 @@ http://emanual.robotis.com/docs/en/platform/openmanipulator_x/ros_applications/#
   $ git clone https://github.com/intel-ros/realsense.git
   $ cd ~/catkin_ws && catkin_make
 ```
+* Step2, Set turtlebot3 environment.       
+http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/  
+```bash
+$ sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation ros-kinetic-interactive-markers
+$ cd ~/catkin_ws/src/
+$ git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
+$ git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
+$ cd ~/catkin_ws && catkin_make
+```
 
-* Step1, Set open manipulator environment.   
+* Step3, Set open manipulator environment.   
 http://emanual.robotis.com/docs/en/platform/openmanipulator/    
 ```bash
 S sudo apt-get install ros-kinetic-ros-controllers ros-kinetic-gazebo* ros-kinetic-moveit* ros-kinetic-industrial-core
@@ -39,7 +48,7 @@ $ git clone https://github.com/ROBOTIS-GIT/robotis_manipulator.git
 $ cd ~/catkin_ws && catkin_make
 ```
 
-* Step2, Set turtlebot3_slam_3d environment.   
+* Step4, Set turtlebot3_slam_3d environment.   
 https://github.com/ROBOTIS-JAPAN-GIT/turtlebot3_slam_3d    
 ```bash
 $git clone https://github.com/hyunoklee/darknet_ros.git
@@ -57,32 +66,31 @@ $sudo apt-get install ros-kinetic-jsk-topic-tools
 $sudo apt-get install ros-kinetic-rtabmap-ros
 ```
 
-* Step3, Set modified open manipulator application environment.   .    
+* Step5, Set modified open manipulator application and open_manipulator_perceptions environment.    
 ```bash
   $ cd ~/catkin_ws/src
-  $ git clone https://github.com/ROBOTIS-GIT/open_manipulator_applications.git
+  $ git clone https://github.com/AuTURBO/open_manipulator_applications.git
+  $ git clone https://github.com/AuTURBO/open_manipulator_perceptions.git
   $ cd ~/catkin_ws && catkin_make
 ```
 
-* Step4, Add open manipulator realsense urdf.       
+* Step6, Add open manipulator realsense urdf.       
+this is only used when you run picking Apple in Gazebo. 
 ```bash
 $ cp -r ~/catkin_ws/src/open_manipulator_applications/extra_urdf/* ~/catkin_ws/src/open_manipulator/open_manipulator_description/urdf/
-```
-
-* Step5, Set turtlebot3 environment.       
-http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/  
-```bash
-$ sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation ros-kinetic-interactive-markers
-$ cd ~/catkin_ws/src/
-$ git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-$ git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
-$ cd ~/catkin_ws && catkin_make
 ```
 
 ## Run 
 
 Click image to link to YouTube video.  
 
+* Run picking Person  
+```bash
+$ roslaunch open_manipulator_controller open_manipulator_controller.launch
+$ roslaunch open_manipulator_ar_markers yolo_jsk_pose.launch camera_model:=realsense_d435
+$ roslaunch open_manipulator_apple open_manipulator_person.launch target_object:=person use_platform:=true
+```
+[![Video Label](http://img.youtube.com/vi/lfMXDJzorS8/0.jpg)](https://youtu.be/lfMXDJzorS8?t=0s)   
 * Run picking Apple  
 ```bash
 $ roslaunch turtlebot3_slam_3d turtlebot3_slam_3d.launch use_zed:=false
